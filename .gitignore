@@ -1,0 +1,45 @@
+# Dependencias
+node_modules/
+
+# Build
+dist/
+dist-ssr/
+*.local
+
+# Vite
+.vite/
+
+# Variables de entorno locales (sí se commitea .env.example)
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.suo
+*.sw?
+
+# OS
+.DS_Store
+Thumbs.db
+
+# src/api/generated/ SÍ se commitea (snapshot del contrato de API)
+
+# Archivo temporal de generación (descargado por npm run generate-api)
+.openapi-temp.yaml
+
+# Test
+coverage/
+playwright-report/
+test-results/
+/playwright/.cache/
+
+# Storybook
+storybook-static/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
