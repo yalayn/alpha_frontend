@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -31,7 +32,7 @@ export function PlanForm({
 }: PlanFormProps) {
   const initialFeatures = defaultValues?.features?.map((v) => ({ value: v })) ?? [{ value: '' }];
 
-  const { register, handleSubmit, control, formState: { errors } } = useForm<PlanFormSchema>({
+  const { register, handleSubmit, control, reset, formState: { errors } } = useForm<PlanFormSchema>({
     resolver: zodResolver(planSchema),
     defaultValues: {
       currency: defaultValues?.currency ?? 'EUR',
@@ -41,6 +42,20 @@ export function PlanForm({
       features: initialFeatures,
     },
   });
+
+  // Aplica los valores cuando vienen de props (modo edición con datos async)
+  useEffect(() => {
+    if (defaultValues) {
+      reset({
+        name: defaultValues.name ?? '',
+        price: defaultValues.price ?? 0,
+        currency: defaultValues.currency ?? 'EUR',
+        interval: defaultValues.interval ?? 'month',
+        features: (defaultValues.features ?? []).map((v) => ({ value: v })),
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [defaultValues?.name, defaultValues?.price, defaultValues?.currency, defaultValues?.interval]);
 
   const { fields, append, remove } = useFieldArray({ control, name: 'features' });
 
