@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Card, CardBody, CardHeader, ErrorMessage, Spinner, Button } from '@/shared';
+import { useAuth } from '@/core/auth/use-auth';
 import { usePlanDetail, usePlanDelete } from '../hooks/use-plans';
 import { formatPlanPrice } from '../utils/plans.utils';
 
 export function PlanDetailPage() {
   const { planId } = useParams<{ planId: string }>();
   const navigate = useNavigate();
+  const { isAdmin } = useAuth();
   const { plan, isLoading, error } = usePlanDetail(planId ?? '');
   const { deletePlan, isPending: isDeleting, error: deleteError } = usePlanDelete();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -37,22 +39,24 @@ export function PlanDetailPage() {
                 {formatPlanPrice(plan.price, plan.currency, plan.interval)}
               </p>
             </div>
-            <div className="flex gap-2 flex-shrink-0">
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => navigate(`/plans/${planId}/edit`)}
-              >
-                Editar
-              </Button>
-              <Button
-                variant="danger"
-                size="sm"
-                onClick={() => setShowDeleteModal(true)}
-              >
-                Eliminar
-              </Button>
-            </div>
+            {isAdmin && (
+              <div className="flex gap-2 flex-shrink-0">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => navigate(`/plans/${planId}/edit`)}
+                >
+                  Editar
+                </Button>
+                <Button
+                  variant="danger"
+                  size="sm"
+                  onClick={() => setShowDeleteModal(true)}
+                >
+                  Eliminar
+                </Button>
+              </div>
+            )}
           </div>
         </CardHeader>
         <CardBody>
