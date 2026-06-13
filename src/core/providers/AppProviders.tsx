@@ -3,6 +3,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { RouterProvider } from 'react-router-dom';
 import { AuthProvider } from '@/core/auth/auth.context';
 import { router } from '@/core/router/router';
+import { ToastContainer } from '@/core/toast';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -19,6 +20,7 @@ export function AppProviders() {
       <AuthProvider>
         <RouterProvider router={router} />
       </AuthProvider>
+      <ToastContainer />
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   );

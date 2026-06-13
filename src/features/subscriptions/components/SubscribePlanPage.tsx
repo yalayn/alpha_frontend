@@ -4,6 +4,7 @@ import { useListPlans } from '@/api/generated/admin/admin';
 import { useSubscribeCustomer } from '@/api/generated/subscriptions/subscriptions';
 import type { Plan } from '@/api/generated/model';
 import { useAuthContext } from '@/core/auth/auth.context';
+import { useToast } from '@/core/toast';
 import {
   Card, Button, Input, ErrorMessage, Modal, PageHeader,
   Heading, Text, CheckList, EmptyState,
@@ -35,15 +36,14 @@ export function SubscribePlanPage() {
   const { data, isLoading, error } = useListPlans();
   const plans = data?.data ?? [];
 
+  const toast = useToast();
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
   const [paymentMethodId, setPaymentMethodId] = useState('');
-  const [paymentError, setPaymentError] = useState<string | null>(null);
 
   const mutation = useSubscribeCustomer();
 
   async function handleConfirm() {
     if (!selectedPlan || !user) return;
-    setPaymentError(null);
 
     try {
       const sub = await mutation.mutateAsync({
@@ -53,9 +53,11 @@ export function SubscribePlanPage() {
           paymentMethodId: paymentMethodId.trim(),
         },
       });
+      toast.success(`Te has suscrito al plan ${selectedPlan.name}.`);
       navigate(`/subscriptions/${sub.id}`);
     } catch (err) {
-      setPaymentError(parsePaymentError(err));
+      // DESIGN_SYSTEM.md §9.4 — error de mutación: toast, no inline
+      toast.error(parsePaymentError(err));
     }
   }
 
@@ -63,7 +65,6 @@ export function SubscribePlanPage() {
     if (mutation.isPending) return;
     setSelectedPlan(null);
     setPaymentMethodId('');
-    setPaymentError(null);
   }
 
   if (isLoading) {
@@ -133,7 +134,6 @@ export function SubscribePlanPage() {
               value={paymentMethodId}
               onChange={(e) => setPaymentMethodId(e.target.value)}
               helperText="Ingresa el ID de tu método de pago de Stripe (pm_...)."
-              errorMessage={paymentError ?? undefined}
               disabled={mutation.isPending}
             />
 

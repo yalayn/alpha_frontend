@@ -1,15 +1,24 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { Card, CardBody, CardHeader, Spinner, ErrorMessage, Button, Heading, Text } from '@/shared';
+import { useToast } from '@/core/toast';
 import { usePlanDetail, usePlanEdit } from '../hooks/use-plans';
 import { PlanForm } from './PlanForm';
 import type { PlanFormValues } from '../types/plans.types';
 
+function parseUpdateError(err: unknown): string {
+  const code = (err as any)?.response?.data?.error ?? (err as any)?.response?.data?.code;
+  if (code === 'plan_already_exists') return 'Ya existe un plan con ese nombre.';
+  if (code === 'plan_interval_locked') return 'El intervalo no puede cambiarse: el plan tiene suscripciones activas.';
+  return 'No se pudo guardar el plan. Intenta de nuevo.';
+}
+
 export function PlanEditPage() {
   const { planId } = useParams<{ planId: string }>();
   const navigate = useNavigate();
+  const toast = useToast();
   const { plan, isLoading, error } = usePlanDetail(planId ?? '');
-  const { updatePlan, isPending, error: updateError } = usePlanEdit(planId ?? '');
+  const { updatePlan, isPending } = usePlanEdit(planId ?? '');
 
   if (isLoading) return <div className="flex justify-center p-12"><Spinner size="lg" /></div>;
   if (error) return <ErrorMessage error={error} className="m-6" />;
@@ -24,8 +33,14 @@ export function PlanEditPage() {
   };
 
   async function handleSubmit(values: PlanFormValues) {
-    await updatePlan(values);
-    navigate(`/plans/${planId}`);
+    try {
+      await updatePlan(values);
+      toast.success('Los cambios del plan fueron guardados.');
+      navigate(`/plans/${planId}`);
+    } catch (err) {
+      // DESIGN_SYSTEM.md §9.4 — error de mutación: toast, no inline
+      toast.error(parseUpdateError(err));
+    }
   }
 
   return (
@@ -44,7 +59,6 @@ export function PlanEditPage() {
           <Text variant="secondary" className="mt-1">{plan.name}</Text>
         </CardHeader>
         <CardBody>
-          {updateError && <ErrorMessage error={updateError} className="mb-4" />}
           <PlanForm
             onSubmit={handleSubmit}
             isSubmitting={isPending}
