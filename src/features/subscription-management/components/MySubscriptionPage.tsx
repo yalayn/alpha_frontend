@@ -7,6 +7,7 @@ import {
 } from '@/shared';
 import { useCancelSubscription, getGetCustomerSubscriptionQueryKey } from '@/api/generated/subscriptions/subscriptions';
 import { useAuth } from '@/core/auth/use-auth';
+import { useToast } from '@/core/toast';
 import { useMySubscription } from '../hooks/use-my-subscription';
 import type { SubscriptionStatus } from '@/api/generated/model';
 
@@ -58,6 +59,7 @@ export function MySubscriptionPage() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const customerId = user?.id ?? '';
+  const toast = useToast();
 
   const { subscription, plan, isLoading, hasNoSubscription, error } = useMySubscription(customerId);
 
@@ -67,6 +69,10 @@ export function MySubscriptionPage() {
         queryClient.invalidateQueries({
           queryKey: getGetCustomerSubscriptionQueryKey(customerId),
         });
+        toast.success('Tu suscripción fue cancelada. Mantienes el acceso hasta el fin del período.');
+      },
+      onError: () => {
+        toast.error('No se pudo cancelar la suscripción. Intenta de nuevo.');
       },
     },
   });

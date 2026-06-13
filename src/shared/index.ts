@@ -17,3 +17,4 @@ export * from './components/molecules/EmptyState';
 export * from './components/molecules/ErrorMessage';
 export * from './components/molecules/Modal';
 export * from './components/molecules/PageHeader';
+export * from './components/molecules/Toast';

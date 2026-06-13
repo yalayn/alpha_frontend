@@ -6,15 +6,23 @@ import {
   Heading, Text, CheckList,
 } from '@/shared';
 import { useAuth } from '@/core/auth/use-auth';
+import { useToast } from '@/core/toast';
 import { usePlanDetail, usePlanDelete } from '../hooks/use-plans';
 import { formatPlanPrice } from '../utils/plans.utils';
+
+function parseDeleteError(err: unknown): string {
+  const code = (err as any)?.response?.data?.error ?? (err as any)?.response?.data?.code;
+  if (code === 'plan_has_active_subscriptions') return 'El plan tiene suscripciones activas y no puede eliminarse.';
+  return 'No se pudo eliminar el plan. Intenta de nuevo.';
+}
 
 export function PlanDetailPage() {
   const { planId } = useParams<{ planId: string }>();
   const navigate = useNavigate();
   const { isAdmin } = useAuth();
+  const toast = useToast();
   const { plan, isLoading, error } = usePlanDetail(planId ?? '');
-  const { deletePlan, isPending: isDeleting, error: deleteError } = usePlanDelete();
+  const { deletePlan, isPending: isDeleting } = usePlanDelete();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   if (isLoading) return <div className="flex justify-center p-12"><Spinner size="lg" /></div>;
@@ -22,8 +30,15 @@ export function PlanDetailPage() {
   if (!plan) return null;
 
   async function handleDelete() {
-    await deletePlan(planId!);
-    navigate('/plans');
+    try {
+      await deletePlan(planId!);
+      toast.success(`El plan ${plan!.name} fue eliminado.`);
+      navigate('/plans');
+    } catch (err) {
+      // DESIGN_SYSTEM.md §9.4 — error de mutación: toast, no inline
+      setShowDeleteModal(false);
+      toast.error(parseDeleteError(err));
+    }
   }
 
   return (
@@ -68,7 +83,6 @@ export function PlanDetailPage() {
         <CardBody>
           <Text variant="label" className="mb-2">Características incluidas</Text>
           <CheckList items={plan.features} />
-          {deleteError && <ErrorMessage error={deleteError} className="mt-4" />}
         </CardBody>
       </Card>
 

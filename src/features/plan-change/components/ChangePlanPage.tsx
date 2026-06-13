@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useListPlans } from '@/api/generated/admin/admin';
+import { useToast } from '@/core/toast';
 import type { Plan } from '@/api/generated/model';
 import {
   Card, Button, Input, ErrorMessage, Modal, PageHeader,
@@ -24,15 +25,14 @@ export function ChangePlanPage() {
   const { data, isLoading, error: plansError } = useListPlans();
   const plans = data?.data ?? [];
 
+  const toast = useToast();
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
   const [paymentMethodId, setPaymentMethodId] = useState('');
-  const [paymentError, setPaymentError] = useState<string | null>(null);
 
   const { changePlan, result, isPending, isSuccess, reset } = usePlanChange(subscriptionId ?? '');
 
   async function handleConfirm() {
     if (!selectedPlan || !subscriptionId) return;
-    setPaymentError(null);
 
     try {
       await changePlan({
@@ -40,7 +40,8 @@ export function ChangePlanPage() {
         paymentMethodId: paymentMethodId.trim(),
       });
     } catch (err) {
-      setPaymentError(parseChangePlanError(err));
+      // DESIGN_SYSTEM.md §9.4 — error de mutación: toast, no inline
+      toast.error(parseChangePlanError(err));
     }
   }
 
@@ -48,7 +49,6 @@ export function ChangePlanPage() {
     if (isPending) return;
     setSelectedPlan(null);
     setPaymentMethodId('');
-    setPaymentError(null);
     reset();
   }
 
@@ -135,7 +135,6 @@ export function ChangePlanPage() {
                   value={paymentMethodId}
                   onChange={(e) => setPaymentMethodId(e.target.value)}
                   helperText="Requerido. Solo se cobra si el cambio es inmediato."
-                  errorMessage={paymentError ?? undefined}
                   disabled={isPending}
                 />
 

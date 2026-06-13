@@ -42,6 +42,12 @@ Los componentes en `shared/` son **stateless**. Reciben props, renderizan UI. No
 ### 2.5 Zustand es la herramienta designada para estado de UI global complejo
 Zustand **no se instala por defecto**. Se incorpora únicamente cuando aparece estado de UI que se comparte entre features y que TanStack Query o Context no resuelven bien (ej: notificaciones toast globales, wizard multi-step que persiste entre rutas, estado de un carrito). Cuando ese caso exista, Zustand es la herramienta elegida — no Redux, no Jotai, no un Context gigante. La decisión de incorporarlo debe quedar documentada en este archivo.
 
+**Casos incorporados:**
+
+| Fecha | Caso | Ubicación | Justificación |
+|---|---|---|---|
+| 2026-06-12 | Sistema de toasts global (DESIGN_SYSTEM.md §10) | `core/toast/toast.store.ts` | Cumple las 3 condiciones de §8.2: no viene de la API, lo disparan todas las features y lo renderiza el layout global, y cambia con frecuencia (Context causaría re-renders en cada toast). |
+
 ### 2.6 Los componentes de feature no tienen estilos de presentación propios
 Los componentes de `features/` **no escriben estilos visuales directamente**. No usan clases de Tailwind que definan colores, tipografía, bordes, sombras ni radios. Toda decisión de apariencia se delega a los componentes atómicos y moleculares de `shared/`.
 
