@@ -432,6 +432,7 @@ core/
 
 **Reglas de `core/`:**
 - `core/` puede importar de `shared/` pero no de `features/`.
+- **Las rutas en `router.tsx` se derivan de la SPE.** Cada ruta proviene de la sección 3.1 de una SPE (su declaración explícita de path, componente y guard) y respeta `NAVIGATION_RULES.md` de `alpha_spec` (guards, layouts y convenciones de navegación disponibles). El Agente **no inventa rutas**: transcribe lo que la SPE declara. Si una ruta hace falta o es ambigua, pausa y reporta al humano — no improvisa un path.
 - Las rutas en `router.tsx` referencian páginas de `features/` a través de lazy imports.
 - **React Router vs TanStack Query:** La carga principal de datos se delega a TanStack Query dentro de las features. Los `loaders` de React Router (v6+) pueden utilizarse opcionalmente para hacer *pre-fetch* de queries de TanStack Query a nivel de ruta y evitar waterfalls, pero el estado final se lee siempre con `useQuery` en el componente.
 - Las variables de entorno se acceden **siempre** a través de `core/config/env.ts`, nunca con `import.meta.env.VITE_*` directamente en componentes.
@@ -667,6 +668,7 @@ Antes de aprobar cualquier Pull Request, verificar:
 - [ ] Ningún componente de `shared/` importa de `features/`
 - [ ] Ninguna feature importa directamente de otra feature
 - [ ] Ningún componente de `features/` usa clases de Tailwind de apariencia (colores, tipografía, bordes, sombras, radios) — solo consume componentes de `shared/`; las clases estructurales de layout y espaciado (`flex`, `grid`, `gap-*`, `space-*`, `p-*`/`m-*`, `w-full`, `max-w-*`) están permitidas
+- [ ] Toda ruta nueva en `router.tsx` proviene de la sección 3.1 de una SPE y cumple `NAVIGATION_RULES.md` (no hay rutas inventadas)
 - [ ] Las variables de entorno se acceden solo a través de `core/config/env.ts`
 - [ ] Los barrel exports (`index.ts`) están actualizados en la feature modificada
 - [ ] El `operationId` nuevo en el OpenAPI (en `alpha_spec`) tiene su hook generado y consumido
