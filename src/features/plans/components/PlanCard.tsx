@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { Card, Badge, Button, Heading, Text, CheckList } from '@/shared';
-import { formatPlanPrice } from '../utils/plans.utils';
+import { formatPrice, formatInterval } from '../utils/plans.utils';
 import type { Plan } from '@/api/generated/model';
 
 type PlanCardProps = Pick<Plan, 'id' | 'name' | 'price' | 'currency' | 'interval' | 'features'> & {
@@ -18,10 +18,10 @@ export function PlanCard({ id, name, price, currency, interval, features, isPopu
       </div>
       <p className="mt-2 flex items-baseline gap-x-2">
         <Heading size="3xl" as="span">
-          {formatPlanPrice(price, currency, interval).replace(`/${interval}`, '')}
+          {formatPrice(price, currency)}
         </Heading>
         <Text as="span" variant="secondary">
-          /{interval === 'month' ? 'mes' : 'año'}
+          /{formatInterval(interval)}
         </Text>
       </p>
       <CheckList items={features} className="mt-6 flex-1" />
