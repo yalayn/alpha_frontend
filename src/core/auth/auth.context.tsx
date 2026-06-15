@@ -20,6 +20,7 @@ function getStoredUser(): User | null {
 interface AuthContextValue {
   user: User | null;
   login: (user: User, token: string) => void;
+  updateUser: (user: User) => void;
   logout: () => void;
   isAuthenticated: boolean;
   isAdmin: boolean;
@@ -36,6 +37,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(user);
   }
 
+  // Refresca los datos del usuario en sesión (p. ej. tras editar el perfil)
+  // sin tocar el token. Mantiene el storage y el contexto sincronizados.
+  function updateUser(user: User) {
+    localStorage.setItem(USER_KEY, JSON.stringify(user));
+    setUser(user);
+  }
+
   function logout() {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
@@ -46,6 +54,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     <AuthContext.Provider value={{
       user,
       login,
+      updateUser,
       logout,
       isAuthenticated: user !== null,
       isAdmin: user?.role === 'admin',

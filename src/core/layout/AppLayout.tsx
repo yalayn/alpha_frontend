@@ -1,6 +1,8 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
+import { useState, useRef, useEffect } from 'react';
+import { ChevronDown, User as UserIcon, LogOut } from 'lucide-react';
 import { useAuth } from '@/core/auth/use-auth';
-import { Button } from '@/shared';
+import { Avatar } from '@/shared';
 import { cn } from '@/shared/utils/cn';
 
 const navItems = [
@@ -19,15 +21,84 @@ function navLinkClass(isActive: boolean) {
   );
 }
 
-// DESIGN_SYSTEM.md §7.2 — Topbar: 56px fijo, fondo surface, borde inferior, sticky
-export function AppLayout() {
-  const { user, logout, isAdmin } = useAuth();
+// Menú de usuario (avatar) — vive a la derecha del topbar (NAVIGATION_RULES §5).
+// Entradas: "Mi cuenta" (SPE-007) y "Salir".
+function UserMenu() {
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function onClickOutside(event: MouseEvent) {
+      if (ref.current && !ref.current.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', onClickOutside);
+    return () => document.removeEventListener('mousedown', onClickOutside);
+  }, []);
+
+  function goToAccount() {
+    setOpen(false);
+    navigate('/account');
+  }
 
   function handleLogout() {
+    setOpen(false);
     logout();
     navigate('/login');
   }
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        type="button"
+        onClick={() => setOpen((value) => !value)}
+        className="flex items-center gap-2 rounded-md px-2 py-1.5 transition-colors hover:bg-subtle"
+        aria-haspopup="menu"
+        aria-expanded={open}
+      >
+        <Avatar name={user?.name ?? '?'} size="sm" />
+        <span className="hidden flex-col items-start sm:flex">
+          <span className="text-sm font-medium leading-tight text-foreground">{user?.name}</span>
+          <span className="text-xs capitalize leading-tight text-foreground-muted">{user?.role}</span>
+        </span>
+        <ChevronDown className="h-4 w-4 text-foreground-muted" aria-hidden="true" />
+      </button>
+
+      {open && (
+        <div
+          role="menu"
+          className="absolute right-0 z-[110] mt-2 w-48 overflow-hidden rounded-md border border-border bg-surface shadow-lg"
+        >
+          <button
+            type="button"
+            role="menuitem"
+            onClick={goToAccount}
+            className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-foreground hover:bg-subtle"
+          >
+            <UserIcon className="h-4 w-4" aria-hidden="true" />
+            Mi cuenta
+          </button>
+          <button
+            type="button"
+            role="menuitem"
+            onClick={handleLogout}
+            className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-foreground hover:bg-subtle"
+          >
+            <LogOut className="h-4 w-4" aria-hidden="true" />
+            Salir
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// DESIGN_SYSTEM.md §7.2 — Topbar: 56px fijo, fondo surface, borde inferior, sticky
+export function AppLayout() {
+  const { isAdmin } = useAuth();
 
   const visibleItems = navItems.filter((item) => !item.adminOnly || isAdmin);
 
@@ -54,20 +125,8 @@ export function AppLayout() {
             </div>
           </div>
 
-          {/* User info + logout */}
-          <div className="flex items-center gap-3">
-            <div className="hidden flex-col items-end sm:flex">
-              <span className="text-sm font-medium text-foreground">
-                {user?.name}
-              </span>
-              <span className="text-xs capitalize text-foreground-muted">
-                {user?.role}
-              </span>
-            </div>
-            <Button variant="ghost" size="sm" onClick={handleLogout}>
-              Salir
-            </Button>
-          </div>
+          {/* Menú de usuario */}
+          <UserMenu />
         </div>
 
         {/* Mobile nav */}
