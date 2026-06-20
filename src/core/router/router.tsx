@@ -42,6 +42,9 @@ const MySubscriptionPage = lazy(() =>
 const AccountPage = lazy(() =>
   import('@/features/account').then((m) => ({ default: m.AccountPage })),
 );
+const EmailChangeConfirmPage = lazy(() =>
+  import('@/features/account').then((m) => ({ default: m.EmailChangeConfirmPage })),
+);
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuth();
@@ -68,6 +71,12 @@ export const router = createBrowserRouter([
   {
     path: '/register',
     element: <SuspenseWrapper><AuthRegisterPage /></SuspenseWrapper>,
+  },
+  // Confirmación de cambio de email (SPE-008): pública porque el enlace se abre
+  // desde el correo; el token es la prueba, no la sesión.
+  {
+    path: '/account/email-change/confirm',
+    element: <SuspenseWrapper><EmailChangeConfirmPage /></SuspenseWrapper>,
   },
 
   // Rutas protegidas (con AppLayout)
