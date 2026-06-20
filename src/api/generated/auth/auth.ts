@@ -33,11 +33,15 @@ import type {
 import type {
   AuthResponse,
   BadRequestResponse,
+  ConfirmEmailChangeRequest,
+  ConfirmEmailChangeResult,
   ConflictResponse,
+  EmailChangeStatus,
   ErrorResponse,
   InternalServerErrorResponse,
   LoginRequest,
   RegisterRequest,
+  RequestEmailChangeRequest,
   UnauthorizedResponse,
   UpdateProfileRequest,
   User,
@@ -433,6 +437,359 @@ export const useUpdateCurrentUser = <
   TContext
 > => {
   const mutationOptions = getUpdateCurrentUserMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+/**
+ * Inicia un cambio de email con **doble control**. No modifica el email todavía:
+crea una solicitud y genera **dos tokens** con expiración (1h por defecto), uno
+enviado al email **actual** y otro al email **nuevo**. El cambio se aplica solo
+cuando ambos se confirman. Requiere JWT — la identidad sale de `req.user.userId`.
+Si ya existe una solicitud pendiente, se cancela y reemplaza por la nueva.
+
+ * @summary Solicitar el cambio de email (doble verificación)
+ */
+export const requestEmailChange = (
+  requestEmailChangeRequest: RequestEmailChangeRequest,
+  signal?: AbortSignal,
+) => {
+  return customInstance<EmailChangeStatus>({
+    url: `/users/me/email-change`,
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    data: requestEmailChangeRequest,
+    signal,
+  });
+};
+
+export const getRequestEmailChangeMutationOptions = <
+  TError =
+    | UnauthorizedResponse
+    | ErrorResponse
+    | ErrorResponse
+    | InternalServerErrorResponse,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof requestEmailChange>>,
+    TError,
+    { data: RequestEmailChangeRequest },
+    TContext
+  >;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof requestEmailChange>>,
+  TError,
+  { data: RequestEmailChangeRequest },
+  TContext
+> => {
+  const mutationKey = ["requestEmailChange"];
+  const { mutation: mutationOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey } };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof requestEmailChange>>,
+    { data: RequestEmailChangeRequest }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return requestEmailChange(data);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type RequestEmailChangeMutationResult = NonNullable<
+  Awaited<ReturnType<typeof requestEmailChange>>
+>;
+export type RequestEmailChangeMutationBody = RequestEmailChangeRequest;
+export type RequestEmailChangeMutationError =
+  | UnauthorizedResponse
+  | ErrorResponse
+  | ErrorResponse
+  | InternalServerErrorResponse;
+
+/**
+ * @summary Solicitar el cambio de email (doble verificación)
+ */
+export const useRequestEmailChange = <
+  TError =
+    | UnauthorizedResponse
+    | ErrorResponse
+    | ErrorResponse
+    | InternalServerErrorResponse,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof requestEmailChange>>,
+      TError,
+      { data: RequestEmailChangeRequest },
+      TContext
+    >;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof requestEmailChange>>,
+  TError,
+  { data: RequestEmailChangeRequest },
+  TContext
+> => {
+  const mutationOptions = getRequestEmailChangeMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+/**
+ * Devuelve el estado de la solicitud de cambio de email pendiente del usuario
+autenticado (qué lados están confirmados, el nuevo email y la expiración).
+**Nunca** devuelve los valores de los tokens. `404` si no hay solicitud pendiente.
+
+ * @summary Estado de la solicitud de cambio de email pendiente
+ */
+export const getEmailChangeStatus = (signal?: AbortSignal) => {
+  return customInstance<EmailChangeStatus>({
+    url: `/users/me/email-change`,
+    method: "GET",
+    signal,
+  });
+};
+
+export const getGetEmailChangeStatusQueryKey = () => {
+  return [`/users/me/email-change`] as const;
+};
+
+export const getGetEmailChangeStatusQueryOptions = <
+  TData = Awaited<ReturnType<typeof getEmailChangeStatus>>,
+  TError = UnauthorizedResponse | ErrorResponse | InternalServerErrorResponse,
+>(options?: {
+  query?: Partial<
+    UseQueryOptions<
+      Awaited<ReturnType<typeof getEmailChangeStatus>>,
+      TError,
+      TData
+    >
+  >;
+}) => {
+  const { query: queryOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetEmailChangeStatusQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getEmailChangeStatus>>
+  > = ({ signal }) => getEmailChangeStatus(signal);
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getEmailChangeStatus>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData> };
+};
+
+export type GetEmailChangeStatusQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getEmailChangeStatus>>
+>;
+export type GetEmailChangeStatusQueryError =
+  | UnauthorizedResponse
+  | ErrorResponse
+  | InternalServerErrorResponse;
+
+export function useGetEmailChangeStatus<
+  TData = Awaited<ReturnType<typeof getEmailChangeStatus>>,
+  TError = UnauthorizedResponse | ErrorResponse | InternalServerErrorResponse,
+>(
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getEmailChangeStatus>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getEmailChangeStatus>>,
+          TError,
+          Awaited<ReturnType<typeof getEmailChangeStatus>>
+        >,
+        "initialData"
+      >;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData>;
+};
+export function useGetEmailChangeStatus<
+  TData = Awaited<ReturnType<typeof getEmailChangeStatus>>,
+  TError = UnauthorizedResponse | ErrorResponse | InternalServerErrorResponse,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getEmailChangeStatus>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getEmailChangeStatus>>,
+          TError,
+          Awaited<ReturnType<typeof getEmailChangeStatus>>
+        >,
+        "initialData"
+      >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
+export function useGetEmailChangeStatus<
+  TData = Awaited<ReturnType<typeof getEmailChangeStatus>>,
+  TError = UnauthorizedResponse | ErrorResponse | InternalServerErrorResponse,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getEmailChangeStatus>>,
+        TError,
+        TData
+      >
+    >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
+/**
+ * @summary Estado de la solicitud de cambio de email pendiente
+ */
+
+export function useGetEmailChangeStatus<
+  TData = Awaited<ReturnType<typeof getEmailChangeStatus>>,
+  TError = UnauthorizedResponse | ErrorResponse | InternalServerErrorResponse,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getEmailChangeStatus>>,
+        TError,
+        TData
+      >
+    >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
+  const queryOptions = getGetEmailChangeStatusQueryOptions(options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * Confirma uno de los dos tokens del cambio de email. **Es público** (sin JWT):
+el token es la única prueba requerida, porque el enlace se abre desde el correo.
+Al confirmar el **segundo** token válido, el cambio se aplica (`applied=true`) y
+el email del usuario queda actualizado. Tokens de un solo uso.
+
+ * @summary Confirmar un token de cambio de email (público)
+ */
+export const confirmEmailChange = (
+  confirmEmailChangeRequest: ConfirmEmailChangeRequest,
+  signal?: AbortSignal,
+) => {
+  return customInstance<ConfirmEmailChangeResult>({
+    url: `/users/me/email-change/confirm`,
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    data: confirmEmailChangeRequest,
+    signal,
+  });
+};
+
+export const getConfirmEmailChangeMutationOptions = <
+  TError =
+    | ErrorResponse
+    | ErrorResponse
+    | ErrorResponse
+    | InternalServerErrorResponse,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof confirmEmailChange>>,
+    TError,
+    { data: ConfirmEmailChangeRequest },
+    TContext
+  >;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof confirmEmailChange>>,
+  TError,
+  { data: ConfirmEmailChangeRequest },
+  TContext
+> => {
+  const mutationKey = ["confirmEmailChange"];
+  const { mutation: mutationOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey } };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof confirmEmailChange>>,
+    { data: ConfirmEmailChangeRequest }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return confirmEmailChange(data);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type ConfirmEmailChangeMutationResult = NonNullable<
+  Awaited<ReturnType<typeof confirmEmailChange>>
+>;
+export type ConfirmEmailChangeMutationBody = ConfirmEmailChangeRequest;
+export type ConfirmEmailChangeMutationError =
+  | ErrorResponse
+  | ErrorResponse
+  | ErrorResponse
+  | InternalServerErrorResponse;
+
+/**
+ * @summary Confirmar un token de cambio de email (público)
+ */
+export const useConfirmEmailChange = <
+  TError =
+    | ErrorResponse
+    | ErrorResponse
+    | ErrorResponse
+    | InternalServerErrorResponse,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof confirmEmailChange>>,
+      TError,
+      { data: ConfirmEmailChangeRequest },
+      TContext
+    >;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof confirmEmailChange>>,
+  TError,
+  { data: ConfirmEmailChangeRequest },
+  TContext
+> => {
+  const mutationOptions = getConfirmEmailChangeMutationOptions(options);
 
   return useMutation(mutationOptions, queryClient);
 };

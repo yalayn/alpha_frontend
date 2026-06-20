@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { profileSchema, roleLabel, formatMemberSince } from './account.utils';
+import {
+  profileSchema,
+  roleLabel,
+  formatMemberSince,
+  emailChangeSchema,
+  formatExpiresAt,
+} from './account.utils';
 
 describe('account utils', () => {
   describe('roleLabel', () => {
@@ -33,6 +39,25 @@ describe('account utils', () => {
 
     it('rechaza un nombre de más de 100 caracteres', () => {
       expect(profileSchema.safeParse({ name: 'a'.repeat(101) }).success).toBe(false);
+    });
+  });
+
+  describe('emailChangeSchema', () => {
+    it('acepta un email válido', () => {
+      expect(emailChangeSchema.safeParse({ newEmail: 'new@example.com' }).success).toBe(true);
+    });
+
+    it('rechaza un email vacío o con formato inválido', () => {
+      expect(emailChangeSchema.safeParse({ newEmail: '' }).success).toBe(false);
+      expect(emailChangeSchema.safeParse({ newEmail: 'no-es-email' }).success).toBe(false);
+    });
+  });
+
+  describe('formatExpiresAt', () => {
+    it('formatea una fecha ISO con fecha y hora', () => {
+      const result = formatExpiresAt('2025-01-01T13:00:00.000Z');
+      expect(result).toContain('2025');
+      expect(typeof result).toBe('string');
     });
   });
 });

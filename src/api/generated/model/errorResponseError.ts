@@ -34,6 +34,11 @@ export const ErrorResponseError = {
   payment_processing_failed: "payment_processing_failed",
   plan_has_active_subscriptions: "plan_has_active_subscriptions",
   plan_interval_locked: "plan_interval_locked",
+  email_already_in_use: "email_already_in_use",
+  email_unchanged: "email_unchanged",
+  email_change_not_found: "email_change_not_found",
+  invalid_token: "invalid_token",
+  token_expired: "token_expired",
   service_unavailable: "service_unavailable",
   internal_server_error: "internal_server_error",
 } as const;
