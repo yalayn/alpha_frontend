@@ -10,6 +10,7 @@ const navItems = [
   { to: '/plans', label: 'Planes', adminOnly: false },
   { to: '/subscription', label: 'Suscripción', adminOnly: false },
   { to: '/access', label: 'Validar Acceso', adminOnly: false },
+  { to: '/contact', label: 'Contacto', adminOnly: false },
 ];
 
 function navLinkClass(isActive: boolean) {
