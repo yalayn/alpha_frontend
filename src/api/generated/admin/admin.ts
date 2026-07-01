@@ -33,6 +33,7 @@ import type {
 import type {
   CreatePlanRequest,
   ErrorResponse,
+  ForbiddenResponse,
   InternalServerErrorResponse,
   ListPlans200,
   Plan,
@@ -62,7 +63,11 @@ export const createPlan = (
 };
 
 export const getCreatePlanMutationOptions = <
-  TError = ErrorResponse | ErrorResponse | InternalServerErrorResponse,
+  TError =
+    | ErrorResponse
+    | ForbiddenResponse
+    | ErrorResponse
+    | InternalServerErrorResponse,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
@@ -104,6 +109,7 @@ export type CreatePlanMutationResult = NonNullable<
 export type CreatePlanMutationBody = CreatePlanRequest;
 export type CreatePlanMutationError =
   | ErrorResponse
+  | ForbiddenResponse
   | ErrorResponse
   | InternalServerErrorResponse;
 
@@ -111,7 +117,11 @@ export type CreatePlanMutationError =
  * @summary Crear un nuevo plan de suscripción
  */
 export const useCreatePlan = <
-  TError = ErrorResponse | ErrorResponse | InternalServerErrorResponse,
+  TError =
+    | ErrorResponse
+    | ForbiddenResponse
+    | ErrorResponse
+    | InternalServerErrorResponse,
   TContext = unknown,
 >(
   options?: {
@@ -402,6 +412,7 @@ export const updatePlan = (
 export const getUpdatePlanMutationOptions = <
   TError =
     | ErrorResponse
+    | ForbiddenResponse
     | ErrorResponse
     | ErrorResponse
     | InternalServerErrorResponse,
@@ -446,6 +457,7 @@ export type UpdatePlanMutationResult = NonNullable<
 export type UpdatePlanMutationBody = UpdatePlanRequest;
 export type UpdatePlanMutationError =
   | ErrorResponse
+  | ForbiddenResponse
   | ErrorResponse
   | ErrorResponse
   | InternalServerErrorResponse;
@@ -456,6 +468,7 @@ export type UpdatePlanMutationError =
 export const useUpdatePlan = <
   TError =
     | ErrorResponse
+    | ForbiddenResponse
     | ErrorResponse
     | ErrorResponse
     | InternalServerErrorResponse,
@@ -488,7 +501,11 @@ export const deletePlan = (planId: string) => {
 };
 
 export const getDeletePlanMutationOptions = <
-  TError = ErrorResponse | ErrorResponse | InternalServerErrorResponse,
+  TError =
+    | ForbiddenResponse
+    | ErrorResponse
+    | ErrorResponse
+    | InternalServerErrorResponse,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
@@ -529,6 +546,7 @@ export type DeletePlanMutationResult = NonNullable<
 >;
 
 export type DeletePlanMutationError =
+  | ForbiddenResponse
   | ErrorResponse
   | ErrorResponse
   | InternalServerErrorResponse;
@@ -537,7 +555,11 @@ export type DeletePlanMutationError =
  * @summary Eliminar un plan sin suscripciones activas
  */
 export const useDeletePlan = <
-  TError = ErrorResponse | ErrorResponse | InternalServerErrorResponse,
+  TError =
+    | ForbiddenResponse
+    | ErrorResponse
+    | ErrorResponse
+    | InternalServerErrorResponse,
   TContext = unknown,
 >(
   options?: {

@@ -45,6 +45,12 @@ const AccountPage = lazy(() =>
 const EmailChangeConfirmPage = lazy(() =>
   import('@/features/account').then((m) => ({ default: m.EmailChangeConfirmPage })),
 );
+const ContactPage = lazy(() =>
+  import('@/features/contact').then((m) => ({ default: m.ContactPage })),
+);
+const ContactMessagesPage = lazy(() =>
+  import('@/features/contact').then((m) => ({ default: m.ContactMessagesPage })),
+);
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuth();
@@ -138,6 +144,18 @@ export const router = createBrowserRouter([
       {
         path: '/account',
         element: <SuspenseWrapper><AccountPage /></SuspenseWrapper>,
+      },
+      {
+        path: '/contact',
+        element: <SuspenseWrapper><ContactPage /></SuspenseWrapper>,
+      },
+      {
+        path: '/contact/messages',
+        element: (
+          <RequireAdmin>
+            <SuspenseWrapper><ContactMessagesPage /></SuspenseWrapper>
+          </RequireAdmin>
+        ),
       },
     ],
   },

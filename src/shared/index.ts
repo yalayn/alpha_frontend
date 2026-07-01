@@ -8,6 +8,7 @@ export * from './components/atoms/Select';
 export * from './components/atoms/Skeleton';
 export * from './components/atoms/Spinner';
 export * from './components/atoms/Text';
+export * from './components/atoms/Textarea';
 export * from './components/atoms/TextLink';
 
 // Moléculas
@@ -17,4 +18,5 @@ export * from './components/molecules/EmptyState';
 export * from './components/molecules/ErrorMessage';
 export * from './components/molecules/Modal';
 export * from './components/molecules/PageHeader';
+export * from './components/molecules/Table';
 export * from './components/molecules/Toast';
